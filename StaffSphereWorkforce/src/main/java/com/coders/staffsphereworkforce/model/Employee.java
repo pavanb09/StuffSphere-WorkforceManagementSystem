@@ -2,6 +2,7 @@ package com.coders.staffsphereworkforce.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "employee")
@@ -38,6 +39,12 @@ public class Employee {
 
     @Column(name = "profile_image")
     private String profileImage; // image URL/path
+    
+ // 🔐 OTP fields for password reset
+    @Column(length = 6)
+    private String otp;
+
+    private LocalDateTime otpExpiry;
 
 	public Employee(Long id, String employeeCode, String fullName, String email, String password, Role role,
 			LocalDate joiningDate, Double salary, String profileImage) {
@@ -136,6 +143,23 @@ public class Employee {
 	public void setDepartment(Department department) {
 		this.department = department;
 	}
+	
+	public String getOtp() {
+	    return otp;
+	}
+
+	public void setOtp(String otp) {
+	    this.otp = otp;
+	}
+
+	public LocalDateTime getOtpExpiry() {
+	    return otpExpiry;
+	}
+
+	public void setOtpExpiry(LocalDateTime otpExpiry) {
+	    this.otpExpiry = otpExpiry;
+	}
+
 	
     
 }

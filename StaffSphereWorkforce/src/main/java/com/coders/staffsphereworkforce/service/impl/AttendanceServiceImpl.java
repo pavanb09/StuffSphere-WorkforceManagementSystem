@@ -1,11 +1,14 @@
 package com.coders.staffsphereworkforce.service.impl;
 
 import com.coders.staffsphereworkforce.dto.attendance.AttendanceResponse;
+import com.coders.staffsphereworkforce.dto.attendance.AttendanceSessionResponse;
 import com.coders.staffsphereworkforce.exception.DuplicateResourceException;
 import com.coders.staffsphereworkforce.exception.ResourceNotFoundException;
-import com.coders.staffsphereworkforce.model.Attendance;
+
+import com.coders.staffsphereworkforce.model.AttendanceDay;
+import com.coders.staffsphereworkforce.model.AttendanceSession;
 import com.coders.staffsphereworkforce.model.Employee;
-import com.coders.staffsphereworkforce.repository.AttendanceRepository;
+import com.coders.staffsphereworkforce.repository.AttendanceDayRepository;
 import com.coders.staffsphereworkforce.repository.EmployeeRepository;
 import com.coders.staffsphereworkforce.security.SecurityUtil;
 import com.coders.staffsphereworkforce.service.AttendanceService;
@@ -14,84 +17,139 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
 public class AttendanceServiceImpl implements AttendanceService {
 
-	private final AttendanceRepository attendanceRepository;
-	private final EmployeeRepository employeeRepository;
+    private final AttendanceDayRepository attendanceDayRepository;
+    private final EmployeeRepository employeeRepository;
 
-	public AttendanceServiceImpl(AttendanceRepository attendanceRepository, EmployeeRepository employeeRepository) {
-		this.attendanceRepository = attendanceRepository;
-		this.employeeRepository = employeeRepository;
-	}
+    public AttendanceServiceImpl(
+            AttendanceDayRepository attendanceDayRepository,
+            EmployeeRepository employeeRepository) {
+        this.attendanceDayRepository = attendanceDayRepository;
+        this.employeeRepository = employeeRepository;
+    }
 
-	@Override
-	public AttendanceResponse checkIn() {
+    @Override
+    public AttendanceResponse checkIn() {
 
-		String email = SecurityUtil.getLoggedInEmail();
+        Employee emp = getLoggedInEmployee();
+        LocalDate today = LocalDate.now();
 
-		Employee emp = employeeRepository.findByEmail(email)
-				.orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        AttendanceDay day = attendanceDayRepository
+                .findByEmployeeAndAttendanceDate(emp, today)
+                .orElseGet(() -> createAttendanceDay(emp, today));
 
-		LocalDate today = LocalDate.now();
+        boolean hasOpenSession = day.getSessions().stream()
+                .anyMatch(s -> s.getCheckOutTime() == null);
 
-		if (attendanceRepository.findByEmployeeAndDate(emp, today).isPresent()) {
-			throw new DuplicateResourceException("Already checked in today");
-		}
+        if (hasOpenSession) {
+            throw new DuplicateResourceException("Already checked in (active session exists)");
+        }
 
-		Attendance attendance = new Attendance();
-		attendance.setEmployee(emp);
-		attendance.setDate(today);
-		attendance.setCheckIn(LocalDateTime.now());
+        AttendanceSession session = new AttendanceSession();
+        session.setCheckInTime(LocalTime.now());
+        session.setAttendanceDay(day);
 
-		return mapToResponse(attendanceRepository.save(attendance));
-	}
+        day.getSessions().add(session);
 
-	@Override
-	public AttendanceResponse checkOut() {
+        attendanceDayRepository.save(day);
 
-		String email = SecurityUtil.getLoggedInEmail();
+        return mapToResponse(day);
+    }
 
-		Employee emp = employeeRepository.findByEmail(email)
-				.orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+    @Override
+    public AttendanceResponse checkOut() {
 
-		Attendance attendance = attendanceRepository.findByEmployeeAndDate(emp, LocalDate.now())
-				.orElseThrow(() -> new ResourceNotFoundException("No check-in found"));
+        Employee emp = getLoggedInEmployee();
+        LocalDate today = LocalDate.now();
 
-		if (attendance.getCheckOut() != null) {
-			throw new DuplicateResourceException("Already checked out");
-		}
+        AttendanceDay day = attendanceDayRepository
+                .findByEmployeeAndAttendanceDate(emp, today)
+                .orElseThrow(() -> new ResourceNotFoundException("No check-in found"));
 
-		LocalDateTime checkOutTime = LocalDateTime.now();
-		attendance.setCheckOut(checkOutTime);
+        AttendanceSession openSession = day.getSessions().stream()
+                .filter(s -> s.getCheckOutTime() == null)
+                .findFirst()
+                .orElseThrow(() -> new DuplicateResourceException("No active check-in"));
 
-		double hours = Duration.between(attendance.getCheckIn(), checkOutTime).toMinutes() / 60.0;
+        openSession.setCheckOutTime(LocalTime.now());
 
-		attendance.setTotalHours(hours);
+        attendanceDayRepository.save(day);
 
-		return mapToResponse(attendanceRepository.save(attendance));
-	}
+        return mapToResponse(day);
+    }
 
-	@Override
-	public List<AttendanceResponse> getAttendanceByEmployee() {
+    @Override
+    public List<AttendanceResponse> getAttendanceByEmployee() {
 
-		String email = SecurityUtil.getLoggedInEmail();
+        Employee emp = getLoggedInEmployee();
 
-		Employee emp = employeeRepository.findByEmail(email)
-				.orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        return attendanceDayRepository.findByEmployee(emp).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
 
-		return attendanceRepository.findByEmployee(emp).stream().map(this::mapToResponse).collect(Collectors.toList());
-	}
+    // ================= HELPER METHODS =================
 
-	private AttendanceResponse mapToResponse(Attendance attendance) {
-		AttendanceResponse res = new AttendanceResponse();
-		res.setDate(attendance.getDate());
-		res.setCheckIn(attendance.getCheckIn());
-		res.setCheckOut(attendance.getCheckOut());
-		res.setTotalHours(attendance.getTotalHours());
-		return res;
-	}
+    private Employee getLoggedInEmployee() {
+        String email = SecurityUtil.getLoggedInEmail();
+        return employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+    }
+
+    private AttendanceDay createAttendanceDay(Employee emp, LocalDate date) {
+        AttendanceDay day = new AttendanceDay();
+        day.setEmployee(emp);
+        day.setAttendanceDate(date);
+        return attendanceDayRepository.save(day);
+    }
+
+    private AttendanceResponse mapToResponse(AttendanceDay day) {
+
+        AttendanceResponse response = new AttendanceResponse();
+        response.setDate(day.getAttendanceDate());
+
+        List<AttendanceSessionResponse> sessions =
+                day.getSessions().stream().map(s -> {
+
+                    AttendanceSessionResponse sr = new AttendanceSessionResponse();
+
+                    sr.setCheckIn(
+                            LocalDateTime.of(day.getAttendanceDate(), s.getCheckInTime())
+                    );
+
+                    if (s.getCheckOutTime() != null) {
+                        sr.setCheckOut(
+                                LocalDateTime.of(day.getAttendanceDate(), s.getCheckOutTime())
+                        );
+                    }
+
+                    return sr;
+                }).toList();
+
+        response.setSessions(sessions);
+        response.setTotalHours(calculateTotalHours(day));
+
+        return response;
+    }
+
+    private Double calculateTotalHours(AttendanceDay day) {
+
+        double totalMinutes = 0;
+
+        for (AttendanceSession s : day.getSessions()) {
+            if (s.getCheckOutTime() != null) {
+                totalMinutes += Duration
+                        .between(s.getCheckInTime(), s.getCheckOutTime())
+                        .toMinutes();
+            }
+        }
+
+        return Math.round((totalMinutes / 60.0) * 100.0) / 100.0;
+    }
 }

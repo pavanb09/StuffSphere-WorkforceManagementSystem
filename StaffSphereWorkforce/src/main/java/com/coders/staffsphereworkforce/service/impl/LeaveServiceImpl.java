@@ -8,7 +8,10 @@ import com.coders.staffsphereworkforce.model.*;
 import com.coders.staffsphereworkforce.repository.EmployeeRepository;
 import com.coders.staffsphereworkforce.repository.LeaveRequestRepository;
 import com.coders.staffsphereworkforce.security.SecurityUtil;
+import com.coders.staffsphereworkforce.service.EmailService;
 import com.coders.staffsphereworkforce.service.LeaveService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -19,11 +22,14 @@ public class LeaveServiceImpl implements LeaveService {
 
     private final LeaveRequestRepository leaveRepository;
     private final EmployeeRepository employeeRepository;
+    private final EmailService emailService;
 
     public LeaveServiceImpl(LeaveRequestRepository leaveRepository,
-                            EmployeeRepository employeeRepository) {
+                            EmployeeRepository employeeRepository,EmailService emailService) {
         this.leaveRepository = leaveRepository;
         this.employeeRepository = employeeRepository;
+        this.emailService = emailService;
+        
     }
 
     @Override
@@ -90,6 +96,15 @@ public class LeaveServiceImpl implements LeaveService {
         }
 
         leave.setStatus(LeaveStatus.APPROVED);
+        emailService.sendEmail(
+        	    leave.getEmployee().getEmail(),
+        	    "Leave Approved",
+        	    "Hello " + leave.getEmployee().getFullName() +
+        	    "\n\nYour leave from " + leave.getStartDate() +
+        	    " to " + leave.getEndDate() + " has been APPROVED." +
+        	    "\n\nRegards,\nHR Team"
+        	);
+
         return mapToResponse(leaveRepository.save(leave));
     }
 
@@ -108,6 +123,14 @@ public class LeaveServiceImpl implements LeaveService {
             throw new BadRequestException("Self approval is not allowed");
         }
         leave.setStatus(LeaveStatus.REJECTED);
+        emailService.sendEmail(
+        	    leave.getEmployee().getEmail(),
+        	    "Leave Rejected",
+        	    "Hello " + leave.getEmployee().getFullName() +
+        	    "\n\nYour leave request has been REJECTED." +
+        	    "\n\nRegards,\nHR Team"
+        	);
+
         return mapToResponse(leaveRepository.save(leave));
     }
 

@@ -10,15 +10,14 @@ import com.coders.staffsphereworkforce.model.Employee;
 import com.coders.staffsphereworkforce.model.Role;
 import com.coders.staffsphereworkforce.repository.DepartmentRepository;
 import com.coders.staffsphereworkforce.repository.EmployeeRepository;
+import com.coders.staffsphereworkforce.service.EmailService;
 import com.coders.staffsphereworkforce.service.EmployeeService;
 import com.coders.staffsphereworkforce.util.FileStorageUtil;
 
-import ch.qos.logback.core.encoder.Encoder;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.security.crypto.password4j.BcryptPassword4jPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -31,16 +30,19 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final EmailService emailService;
     
     @Autowired
     private PasswordEncoder encoder;
 
     @Value("${staffsphere.upload.dir}")
     private String uploadDir;
+    
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,DepartmentRepository departmentRepository) {
+    public EmployeeServiceImpl(EmployeeRepository employeeRepository,DepartmentRepository departmentRepository,EmailService emailService) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
+        this.emailService = emailService;
     }
 
     @Override
@@ -70,6 +72,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         saved.setEmployeeCode(code);
 
         employeeRepository.save(saved);
+        
+        emailService.sendEmail(
+        	    emp.getEmail(),
+        	    "Welcome to StaffSphere – Your Employee Account Is Ready",
+        	    "Dear " + emp.getFullName() + ",\n\n" +
+        	    "Welcome to StaffSphere!\n\n" +
+        	    "We are pleased to inform you that your employee account has been successfully created in our workforce management system.\n\n" +
+        	    "Account Details:\n" +
+        	    "- Official Email: " + emp.getEmail() + "\n" +
+        	    "- Role: " + emp.getRole() + "\n\n" +
+        	    "You can now log in to StaffSphere to:\n" +
+        	    "• View and update your profile\n" +
+        	    "• Mark daily attendance\n" +
+        	    "• Apply for leaves and track their status\n\n" +
+        	    "For security reasons, we recommend changing your password after your first login.\n\n" +
+        	    "If you have any questions, please reach out to the HR team.\n\n" +
+        	    "We wish you a successful and rewarding journey with us.\n\n" +
+        	    "Best regards,\n" +
+        	    "HR Team\n" +
+        	    "StaffSphere Workforce Platform"
+        	);
 
         return mapToResponse(saved);
     }
