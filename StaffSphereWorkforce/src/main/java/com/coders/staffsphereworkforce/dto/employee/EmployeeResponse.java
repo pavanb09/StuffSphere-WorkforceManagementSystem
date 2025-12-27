@@ -9,6 +9,7 @@ public class EmployeeResponse {
     private String fullName;
     private String email;
     private String role;
+    private String designation;
     private LocalDate joiningDate;
     private Double salary;
     private String department;
@@ -20,18 +21,42 @@ public class EmployeeResponse {
 	}
 
 
+	
+
+
+	public String getDesignation() {
+		return designation;
+	}
+
+
+
+
+
+	public void setDesignation(String designation) {
+		this.designation = designation;
+	}
+
+
+
+
+
 	public EmployeeResponse(Long id, String employeeCode, String fullName, String email, String role,
-			LocalDate joiningDate, Double salary, String profileImage) {
+			String designation, LocalDate joiningDate, Double salary, String department, String profileImage) {
 		super();
 		this.id = id;
 		this.employeeCode = employeeCode;
 		this.fullName = fullName;
 		this.email = email;
 		this.role = role;
+		this.designation = designation;
 		this.joiningDate = joiningDate;
 		this.salary = salary;
+		this.department = department;
 		this.profileImage = profileImage;
 	}
+
+
+
 
 
 	public Long getId() {
@@ -124,22 +149,8 @@ public class EmployeeResponse {
 	}
 
 
-	public EmployeeResponse(Long id, String employeeCode, String fullName, String email, String role,
-			LocalDate joiningDate, Double salary, String department, String profileImage) {
-		super();
-		this.id = id;
-		this.employeeCode = employeeCode;
-		this.fullName = fullName;
-		this.email = email;
-		this.role = role;
-		this.joiningDate = joiningDate;
-		this.salary = salary;
-		this.department = department;
-		this.profileImage = profileImage;
-	}
-    
-    
 
-    // getters & setters
+    
+    
 	
 }

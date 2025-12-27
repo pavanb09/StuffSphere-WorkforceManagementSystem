@@ -1,4 +1,4 @@
-package com.coders.staffsphereworkforce.model;
+ package com.coders.staffsphereworkforce.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDate;
@@ -28,6 +28,10 @@ public class Employee {
     @Column(nullable = false)
     private Role role; // HR / EMPLOYEE
     
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Designation designation;
+    
     @ManyToOne
     @JoinColumn(name = "department_id")
     private Department department;
@@ -46,8 +50,18 @@ public class Employee {
 
     private LocalDateTime otpExpiry;
 
+    
+	public Designation getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(Designation designation) {
+		this.designation = designation;
+	}
+
 	public Employee(Long id, String employeeCode, String fullName, String email, String password, Role role,
-			LocalDate joiningDate, Double salary, String profileImage) {
+			Designation designation, Department department, LocalDate joiningDate, Double salary, String profileImage,
+			String otp, LocalDateTime otpExpiry) {
 		super();
 		this.id = id;
 		this.employeeCode = employeeCode;
@@ -55,9 +69,13 @@ public class Employee {
 		this.email = email;
 		this.password = password;
 		this.role = role;
+		this.designation = designation;
+		this.department = department;
 		this.joiningDate = joiningDate;
 		this.salary = salary;
 		this.profileImage = profileImage;
+		this.otp = otp;
+		this.otpExpiry = otpExpiry;
 	}
 
 	public Employee() {

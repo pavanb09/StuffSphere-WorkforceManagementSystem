@@ -39,5 +39,19 @@ public class AttendanceController {
         return new ApiResponse<>("Attendance fetched",
                 attendanceService.getAttendanceByEmployee());
     }
+    
+    @PreAuthorize("hasAnyRole('HR')")
+    @GetMapping
+    public ApiResponse<List<AttendanceResponse>> getAttendace(){
+    	return new ApiResponse<>("Attendace fetched",attendanceService.getAllAttendance());
+    }
+    
+    @PreAuthorize("hasAnyRole('HR')")
+    @GetMapping("{id}")
+    public ApiResponse<List<AttendanceResponse>> getAttendaceById(@PathVariable Long id){
+    	return new ApiResponse<>("Attendace fetched",attendanceService.getAttendanceById(id));
+    }
+    
+    
 }
 

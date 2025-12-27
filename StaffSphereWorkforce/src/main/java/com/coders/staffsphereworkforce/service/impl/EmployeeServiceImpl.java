@@ -2,26 +2,25 @@ package com.coders.staffsphereworkforce.service.impl;
 
 import com.coders.staffsphereworkforce.dto.employee.EmployeeCreateRequest;
 import com.coders.staffsphereworkforce.dto.employee.EmployeeResponse;
+import com.coders.staffsphereworkforce.exception.BadRequestException;
 import com.coders.staffsphereworkforce.exception.DuplicateResourceException;
-import com.coders.staffsphereworkforce.exception.FileStorageException;
 import com.coders.staffsphereworkforce.exception.ResourceNotFoundException;
 import com.coders.staffsphereworkforce.model.Department;
+import com.coders.staffsphereworkforce.model.Designation;
 import com.coders.staffsphereworkforce.model.Employee;
 import com.coders.staffsphereworkforce.model.Role;
 import com.coders.staffsphereworkforce.repository.DepartmentRepository;
 import com.coders.staffsphereworkforce.repository.EmployeeRepository;
+import com.coders.staffsphereworkforce.service.CloudinaryService;
 import com.coders.staffsphereworkforce.service.EmailService;
 import com.coders.staffsphereworkforce.service.EmployeeService;
-import com.coders.staffsphereworkforce.util.FileStorageUtil;
 
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -31,18 +30,22 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
     private final EmailService emailService;
+    private final CloudinaryService cloudinaryService;
     
     @Autowired
     private PasswordEncoder encoder;
 
-    @Value("${staffsphere.upload.dir}")
-    private String uploadDir;
-    
 
-    public EmployeeServiceImpl(EmployeeRepository employeeRepository,DepartmentRepository departmentRepository,EmailService emailService) {
+    public EmployeeServiceImpl(
+            EmployeeRepository employeeRepository,
+            DepartmentRepository departmentRepository,
+            EmailService emailService,
+            CloudinaryService cloudinaryService
+    ) {
         this.employeeRepository = employeeRepository;
         this.departmentRepository = departmentRepository;
         this.emailService = emailService;
+        this.cloudinaryService = cloudinaryService;
     }
 
     @Override
@@ -60,12 +63,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         emp.setEmail(request.getEmail());
         emp.setPassword(encoder.encode(request.getPassword()));
         emp.setRole(Role.valueOf(request.getRole()));
+        emp.setDesignation(Designation.valueOf(request.getDesignation()));
         emp.setJoiningDate(request.getJoiningDate());
         emp.setSalary(request.getSalary());
 
         // ✅ THIS LINE WAS MISSING
         emp.setDepartment(department);
-
         Employee saved = employeeRepository.save(emp);
 
         String code = "EMP" + String.format("%03d", saved.getId());
@@ -81,7 +84,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         	    "We are pleased to inform you that your employee account has been successfully created in our workforce management system.\n\n" +
         	    "Account Details:\n" +
         	    "- Official Email: " + emp.getEmail() + "\n" +
-        	    "- Role: " + emp.getRole() + "\n\n" +
+        	    "- Role: " + emp.getDesignation() + "\n\n" +
         	    "You can now log in to StaffSphere to:\n" +
         	    "• View and update your profile\n" +
         	    "• Mark daily attendance\n" +
@@ -111,6 +114,12 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
         return mapToResponse(emp);
     }
+    
+    @Override
+    public EmployeeResponse getEmployeeByEmail(String email) {
+    	Employee emp = employeeRepository.findByEmail(email).orElseThrow(()-> new ResourceNotFoundException("Employee not found"));
+    	return mapToResponse(emp);
+    }
 
     @Override
     public EmployeeResponse updateEmployee(Long id, EmployeeCreateRequest request) {
@@ -118,11 +127,37 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
         emp.setFullName(request.getFullName());
-        emp.setEmail(request.getEmail());
+        emp.setDesignation(Designation.valueOf(request.getDesignation()));
         emp.setSalary(request.getSalary());
 
         return mapToResponse(employeeRepository.save(emp));
     }
+    
+    @Override
+    public EmployeeResponse updateProfile(String email, String fullName) {
+    	Employee emp = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        emp.setFullName(fullName);
+
+        return mapToResponse(employeeRepository.save(emp));
+    	
+    }
+    
+    @Override
+	public void changePassword(String email, String currentPassword, String newPassword) {
+    	Employee emp = employeeRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        // 🔐 Verify current password
+        if (!encoder.matches(currentPassword, emp.getPassword())) {
+            throw new BadRequestException("Current password is incorrect");
+        }
+
+        emp.setPassword(encoder.encode(newPassword));
+        employeeRepository.save(emp);
+		
+	}
 
     @Override
     public void deleteEmployee(Long id) {
@@ -131,19 +166,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     @Override
-    public void uploadProfileImage(Long employeeId, MultipartFile file) {
+    public void uploadProfileImage(String email, MultipartFile file) {
 
-        Employee emp = employeeRepository.findById(employeeId)
-                .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+        Employee emp = employeeRepository.findByEmail(email)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
-        try {
-            String imagePath = FileStorageUtil.saveFile(uploadDir, file);
-            emp.setProfileImage(imagePath);
-            employeeRepository.save(emp);
-        } catch (IOException e) {
-            throw new FileStorageException("Image upload failed",e);
-        }
+        String imageUrl = cloudinaryService.uploadImage(file);
+
+        emp.setProfileImage(imageUrl);
+        employeeRepository.save(emp);
     }
+
+
 
     private EmployeeResponse mapToResponse(Employee emp) {
         EmployeeResponse res = new EmployeeResponse();
@@ -152,10 +186,27 @@ public class EmployeeServiceImpl implements EmployeeService {
         res.setFullName(emp.getFullName());
         res.setEmail(emp.getEmail());
         res.setRole(emp.getRole().name());
+        res.setDesignation(emp.getDesignation().name());
         res.setJoiningDate(emp.getJoiningDate());
         res.setSalary(emp.getSalary());
         res.setProfileImage(emp.getProfileImage());
         res.setDepartment(emp.getDepartment().getName());
         return res;
     }
+
+    @Override
+    public void uploadProfileImage(Long employeeId, MultipartFile file) {
+
+        Employee emp = employeeRepository.findById(employeeId)
+            .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
+
+        String imageUrl = cloudinaryService.uploadImage(file);
+
+        emp.setProfileImage(imageUrl);
+        employeeRepository.save(emp);
+    }
+
+
+
+	
 }

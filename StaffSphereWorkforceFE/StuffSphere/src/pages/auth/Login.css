@@ -1,0 +1,146 @@
+/* PAGE LAYOUT */
+.login-page {
+  min-height: 100vh;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: #f8fafc;
+}
+
+/* LEFT VISUAL */
+.login-visual {
+  padding: 80px;
+  background:
+    radial-gradient(800px circle at top left, rgba(192,132,87,0.35), transparent 50%),
+    linear-gradient(180deg, #0f172a, #020617);
+  color: white;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.login-visual h1 {
+  font-size: 42px;
+  margin-bottom: 12px;
+}
+
+.login-visual p {
+  color: #cbd5f5;
+  max-width: 360px;
+}
+
+/* RIGHT FORM */
+.login-form-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: white;
+  padding: 40px;
+  border-radius: 20px;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.1);
+}
+
+.login-card h2 {
+  margin-bottom: 6px;
+}
+
+.sub-text {
+  color: #64748b;
+  margin-bottom: 24px;
+}
+
+/* INPUTS */
+.login-card input {
+  width: 100%;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  border-radius: 10px;
+  border: 1px solid #e5e7eb;
+  font-size: 14px;
+}
+
+.login-card input:focus {
+  outline: none;
+  border-color: #c08457;
+}
+
+/* BUTTON */
+.login-card button {
+  width: 100%;
+  padding: 14px;
+  border-radius: 999px;
+  border: none;
+  background: #c08457;
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.login-card button:disabled {
+  opacity: 0.7;
+}
+
+/* LINKS */
+.login-links {
+  text-align: center;
+  margin-top: 16px;
+}
+
+.login-links a {
+  color: #64748b;
+  text-decoration: none;
+  font-size: 14px;
+}
+
+/* RESPONSIVE – MOBILE */
+@media (max-width: 768px) {
+  .login-page {
+    grid-template-columns: 1fr;
+  }
+
+  .login-visual {
+    display: none;
+  }
+
+  .login-card {
+    box-shadow: none;
+    padding: 32px 24px;
+  }
+}
+
+
+/* Brand header inside login card */
+.login-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.login-brand img {
+  height: 32px;
+}
+
+.login-brand span {
+  font-weight: 700;
+  font-size: 18px;
+}
+
+/* Back to home link */
+.back-home {
+  display: inline-block;
+  margin-bottom: 16px;
+  font-size: 14px;
+  color: #64748b;
+  text-decoration: none;
+}
+
+.back-home:hover {
+  color: #c08457;
+}
+
+

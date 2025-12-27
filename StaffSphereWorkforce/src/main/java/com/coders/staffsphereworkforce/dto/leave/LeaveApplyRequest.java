@@ -9,9 +9,10 @@ public class LeaveApplyRequest {
 
     @NotBlank
     private String type; // SICK, CASUAL
-
+    
     @NotNull
     private LocalDate startDate;
+    
 
     @NotNull
     private LocalDate endDate;

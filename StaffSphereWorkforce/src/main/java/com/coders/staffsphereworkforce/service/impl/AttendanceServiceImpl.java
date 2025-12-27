@@ -2,6 +2,7 @@ package com.coders.staffsphereworkforce.service.impl;
 
 import com.coders.staffsphereworkforce.dto.attendance.AttendanceResponse;
 import com.coders.staffsphereworkforce.dto.attendance.AttendanceSessionResponse;
+import com.coders.staffsphereworkforce.dto.employee.EmployeeResponse;
 import com.coders.staffsphereworkforce.exception.DuplicateResourceException;
 import com.coders.staffsphereworkforce.exception.ResourceNotFoundException;
 
@@ -26,12 +27,19 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceDayRepository attendanceDayRepository;
     private final EmployeeRepository employeeRepository;
-
+    
     public AttendanceServiceImpl(
             AttendanceDayRepository attendanceDayRepository,
             EmployeeRepository employeeRepository) {
         this.attendanceDayRepository = attendanceDayRepository;
         this.employeeRepository = employeeRepository;
+    }
+    
+    @Override
+    public List<AttendanceResponse> getAllAttendance() {
+    	return attendanceDayRepository.findAll().stream()
+    			.map(this::mapToResponse)
+    			.collect(Collectors.toList());
     }
 
     @Override
@@ -93,6 +101,17 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
     }
+    
+    
+    @Override
+    public List<AttendanceResponse> getAttendanceById( Long id) {
+    	Employee emp = employeeRepository.findById(id).orElseThrow(()-> new ResourceNotFoundException("Employee id is not found"));
+
+        return attendanceDayRepository.findByEmployee(emp).stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+    }
+    
 
     // ================= HELPER METHODS =================
 
@@ -113,6 +132,7 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         AttendanceResponse response = new AttendanceResponse();
         response.setDate(day.getAttendanceDate());
+        response.setEmployee(maptoEmployeeResponse(day.getEmployee()));
 
         List<AttendanceSessionResponse> sessions =
                 day.getSessions().stream().map(s -> {
@@ -137,6 +157,22 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return response;
     }
+    
+
+    
+    private EmployeeResponse maptoEmployeeResponse(Employee emp) {
+    	EmployeeResponse res = new EmployeeResponse();
+        res.setId(emp.getId());
+        res.setEmployeeCode(emp.getEmployeeCode());
+        res.setFullName(emp.getFullName());
+        res.setEmail(emp.getEmail());
+        res.setRole(emp.getRole().name());
+        res.setJoiningDate(emp.getJoiningDate());
+        res.setSalary(emp.getSalary());
+        res.setProfileImage(emp.getProfileImage());
+        res.setDepartment(emp.getDepartment().getName());
+        return res;
+    }
 
     private Double calculateTotalHours(AttendanceDay day) {
 
@@ -152,4 +188,5 @@ public class AttendanceServiceImpl implements AttendanceService {
 
         return Math.round((totalMinutes / 60.0) * 100.0) / 100.0;
     }
+
 }

@@ -17,9 +17,11 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.coders.staffsphereworkforce.dto.employee.ChangePasswordRequest;
 import com.coders.staffsphereworkforce.dto.employee.EmployeeCreateRequest;
 import com.coders.staffsphereworkforce.dto.employee.EmployeeResponse;
 import com.coders.staffsphereworkforce.response.ApiResponse;
+import com.coders.staffsphereworkforce.security.SecurityUtil;
 import com.coders.staffsphereworkforce.service.EmployeeService;
 
 import jakarta.validation.Valid;
@@ -54,6 +56,15 @@ public class EmployeeController {
         return new ApiResponse<>("Employee fetched",
                 employeeService.getEmployeeById(id));
     }
+    
+    @PreAuthorize("hasAnyRole('HR','EMPLOYEE')")
+    @GetMapping("/me")
+    public ApiResponse<EmployeeResponse> getEmployee(){
+    	String email = SecurityUtil.getLoggedInEmail();
+    	return new ApiResponse<>("Employee fetched",
+                employeeService.getEmployeeByEmail(email));
+    	
+    }
 
     @PreAuthorize("hasAnyRole('HR')")
     @PutMapping("/{id}")
@@ -71,13 +82,56 @@ public class EmployeeController {
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 
-    @PreAuthorize("hasAnyRole('HR','EMPLOYEE ')")
-    @PostMapping("/{id}/upload-image")
-    public ApiResponse<String> uploadProfileImage(
-            @PathVariable Long id,
-            @RequestParam("file") MultipartFile file) {  
+    @PreAuthorize("hasAnyRole('HR','EMPLOYEE')")
+    @PutMapping("/profile/image")
+    public ApiResponse<String> uploadOwnProfileImage(
+            @RequestParam("file") MultipartFile file) {
 
-        employeeService.uploadProfileImage(id, file);
+        String email = SecurityUtil.getLoggedInEmail();
+
+        employeeService.uploadProfileImage(email, file);
+
         return new ApiResponse<>("Profile image uploaded", null);
     }
+    
+    @PreAuthorize("hasRole('HR')")
+    @PutMapping("/hr/profile/image/{employeeId}")
+    public ApiResponse<String> uploadEmployeeProfileImage(
+            @PathVariable Long employeeId,
+            @RequestParam("file") MultipartFile file) {
+
+        employeeService.uploadProfileImage(employeeId, file);
+
+        return new ApiResponse<>("Employee profile image uploaded", null);
+    }
+    
+    @PreAuthorize("hasAnyRole('HR','EMPLOYEE')")
+    @PutMapping("/profile/change-password")
+    public ApiResponse<?> changePassword(
+            @RequestBody ChangePasswordRequest request) {
+
+        String email = SecurityUtil.getLoggedInEmail();
+
+        employeeService.changePassword(
+            email,
+            request.getCurrentPassword(),
+            request.getNewPassword()
+        );
+
+        return new ApiResponse<>("Password updated successfully", null);
+    }
+
+    
+    @PreAuthorize("hasAnyRole('EMPLOYEE')")
+    @PutMapping("/profile")
+    public ApiResponse<EmployeeResponse> updateProfile(
+            @RequestParam String fullName) {
+
+        String email = SecurityUtil.getLoggedInEmail();
+
+
+        return new ApiResponse<>("Profile updated successfully",employeeService.updateProfile(email, fullName));
+    }
+
+
 }

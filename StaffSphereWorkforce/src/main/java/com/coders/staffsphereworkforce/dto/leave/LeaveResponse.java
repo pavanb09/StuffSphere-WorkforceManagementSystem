@@ -6,17 +6,19 @@ public class LeaveResponse {
 
 	private Long leaveId;
 	private String employeeCode;
+	private String name;
 	private String leaveType;
 	private LocalDate startDate;
 	private LocalDate endDate;
 	private String status;
 	private String reason;
 
-	public LeaveResponse(Long leaveId, String employeeCode, String leaveType, LocalDate startDate, LocalDate endDate,
+	public LeaveResponse(Long leaveId, String employeeCode,String name, String leaveType, LocalDate startDate, LocalDate endDate,
 			String status, String reason) {
 		super();
 		this.leaveId = leaveId;
 		this.employeeCode = employeeCode;
+		this.name = name;
 		this.leaveType = leaveType;
 		this.startDate = startDate;
 		this.endDate = endDate;
@@ -84,6 +86,13 @@ public class LeaveResponse {
 		this.reason = reason;
 	}
 
-	// getters & setters
+	public String getName() {
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
+
 
 }

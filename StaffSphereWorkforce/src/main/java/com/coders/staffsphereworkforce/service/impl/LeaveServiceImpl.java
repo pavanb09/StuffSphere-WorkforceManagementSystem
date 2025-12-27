@@ -14,6 +14,7 @@ import com.coders.staffsphereworkforce.service.LeaveService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -35,16 +36,28 @@ public class LeaveServiceImpl implements LeaveService {
     @Override
     public LeaveResponse applyLeave(LeaveApplyRequest request) {
 
-    	String email = SecurityUtil.getLoggedInEmail();
+        String email = SecurityUtil.getLoggedInEmail();
 
         Employee employee = employeeRepository.findByEmail(email)
                 .orElseThrow(() -> new ResourceNotFoundException("Employee not found"));
 
+        LocalDate today = LocalDate.now();
+
+        // ❌ startDate cannot be in the past
+        if (request.getStartDate().isBefore(today)) {
+            throw new BadRequestException("Start date must be today or a future date");
+        }
+
+        // ❌ endDate cannot be in the past
+        if (request.getEndDate().isBefore(today)) {
+            throw new BadRequestException("End date must be today or a future date");
+        }
+
+        // ❌ endDate cannot be before startDate
         if (request.getEndDate().isBefore(request.getStartDate())) {
             throw new BadRequestException("End date cannot be before start date");
         }
 
-    	
         LeaveRequest leave = new LeaveRequest();
         leave.setEmployee(employee);
         leave.setType(LeaveType.valueOf(request.getType().toUpperCase()));
@@ -138,6 +151,7 @@ public class LeaveServiceImpl implements LeaveService {
         LeaveResponse res = new LeaveResponse();
         res.setLeaveId(leave.getId());
         res.setEmployeeCode(leave.getEmployee().getEmployeeCode());
+        res.setName(leave.getEmployee().getFullName());
         res.setLeaveType(leave.getType().name());
         res.setStartDate(leave.getStartDate());
         res.setEndDate(leave.getEndDate());

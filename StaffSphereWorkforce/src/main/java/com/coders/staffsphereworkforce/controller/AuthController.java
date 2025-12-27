@@ -1,6 +1,8 @@
 package com.coders.staffsphereworkforce.controller;
 
 
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -65,15 +67,15 @@ public class AuthController {
 	    
 
 	    @PostMapping("/forgot-password")
-	    public ResponseEntity<String> forgotPassword(
+	    public ResponseEntity<?> forgotPassword(
 	            @RequestBody @Valid ForgotPasswordRequest request) {
 
 	        authService.forgotPassword(request.getEmail());
-	        return ResponseEntity.ok("OTP sent to registered email");
+	        return ResponseEntity.ok(Map.of("message","OTP sent to registered email"));
 	    }
 
 	    @PostMapping("/reset-password")
-	    public ResponseEntity<String> resetPassword(
+	    public ResponseEntity<?> resetPassword(
 	            @RequestBody @Valid ResetPasswordRequest request) {
 
 	        authService.resetPassword(
@@ -82,7 +84,7 @@ public class AuthController {
 	                request.getNewPassword()
 	        );
 
-	        return ResponseEntity.ok("Password reset successful");
+	        return ResponseEntity.ok(Map.of("message","  "));
 	    }
 	    
 	    

@@ -11,4 +11,9 @@ public interface AttendanceService {
     AttendanceResponse checkOut();
 
     List<AttendanceResponse> getAttendanceByEmployee();
+    
+    List<AttendanceResponse> getAllAttendance();
+    
+    List<AttendanceResponse> getAttendanceById(Long id);
 }
+

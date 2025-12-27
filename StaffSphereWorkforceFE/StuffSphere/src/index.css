@@ -1,0 +1,13 @@
+:root {
+  --primary: #6366f1;        /* Indigo */
+  --primary-strong: #4f46e5;
+  --accent: #22d3ee;
+
+  --bg-main: #f8fafc;
+  --bg-soft: #eef2ff;
+  --bg-dark: #020617;
+
+  --text-main: #0f172a;
+  --text-muted: #64748b;
+  --white: #ffffff;
+}

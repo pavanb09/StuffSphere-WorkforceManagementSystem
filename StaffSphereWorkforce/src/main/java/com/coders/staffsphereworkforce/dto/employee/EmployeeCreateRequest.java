@@ -24,12 +24,26 @@ public class EmployeeCreateRequest {
     private LocalDate joiningDate;
 
     private Double salary;
+    
+    @NotBlank
+    private String designation;
 
     @NotNull
     private Long departmentId;  
     
+	
+
+	public String getDesignation() {
+		return designation;
+	}
+
+	public void setDesignation(String designation) {
+		this.designation = designation;
+	}
+
 	public EmployeeCreateRequest(@NotBlank String fullName, @Email @NotBlank String email, @NotBlank String password,
-			@NotBlank String role, @NotNull LocalDate joiningDate, Double salary) {
+			@NotBlank String role, @NotNull LocalDate joiningDate, Double salary, @NotBlank String designation,
+			@NotNull Long departmentId) {
 		super();
 		this.fullName = fullName;
 		this.email = email;
@@ -37,6 +51,8 @@ public class EmployeeCreateRequest {
 		this.role = role;
 		this.joiningDate = joiningDate;
 		this.salary = salary;
+		this.designation = designation;
+		this.departmentId = departmentId;
 	}
 
 	public EmployeeCreateRequest() {

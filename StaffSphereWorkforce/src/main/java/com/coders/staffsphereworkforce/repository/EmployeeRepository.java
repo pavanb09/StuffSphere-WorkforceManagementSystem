@@ -1,6 +1,8 @@
 package com.coders.staffsphereworkforce.repository;
 
 import com.coders.staffsphereworkforce.model.Employee;
+import com.coders.staffsphereworkforce.model.Role;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,4 +16,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, Long> {
     boolean existsByEmail(String email);
 
 	Optional<Employee> findByEmployeeCode(String employeeId);
+	
+	boolean existsByRole(Role role);
+
 }

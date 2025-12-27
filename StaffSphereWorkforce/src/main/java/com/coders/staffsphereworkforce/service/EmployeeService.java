@@ -18,5 +18,13 @@ public interface EmployeeService {
 
     void deleteEmployee(Long id);
 
+    void uploadProfileImage(String email, MultipartFile file);
     void uploadProfileImage(Long employeeId, MultipartFile file);
+
+
+	void changePassword(String email, String currentPassword, String newPassword);
+
+	EmployeeResponse updateProfile(String email, String fullName);
+
+	EmployeeResponse getEmployeeByEmail(String email);
 }
