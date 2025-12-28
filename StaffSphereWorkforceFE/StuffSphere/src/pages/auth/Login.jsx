@@ -3,7 +3,7 @@ import { useNavigate, Link } from "react-router-dom";
 import { toast } from "react-toastify";
 import authService from "../../services/authService";
 import { useAuth } from "../../auth/AuthContext";
-import "./login.css";
+import "./Login.css";
 
 const Login = () => {
   const [email, setEmail] = useState("");

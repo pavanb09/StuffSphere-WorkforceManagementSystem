@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import authService from "../../services/authService";
-import "./login.css";
+import "./Login.css";
 
 const ResetPassword = () => {
   const navigate = useNavigate();
