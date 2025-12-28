@@ -9,10 +9,11 @@ const departmentService = {
   },
 
   // HR: add department
-  addDepartment: async (name) => {
-    const res = await axiosInstance.post("/departments", { name });
-    return res.data;
-  }
+  addDepartment: async (data) => {
+  const res = await axiosInstance.post("/departments", data);
+  return res.data;
+}
+
 
 };
 

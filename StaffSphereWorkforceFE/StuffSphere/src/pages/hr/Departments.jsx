@@ -13,6 +13,7 @@ import departmentService from "../../services/departmentService";
 
 const Departments = () => {
   const [departments, setDepartments] = useState([]);
+  const [description, setDescription] = useState("");
   const [name, setName] = useState("");
   const [search, setSearch] = useState("");
   const [alert, setAlert] = useState(null);
@@ -27,24 +28,30 @@ const Departments = () => {
   };
 
   const handleAdd = async () => {
-    if (!name.trim()) {
-      setAlert({ type: "danger", text: "Department name is required" });
-      return;
-    }
+  if (!name.trim() || !description.trim()) {
+    setAlert({
+      type: "danger",
+      text: "Department name and description are required"
+    });
+    return;
+  }
 
-    try {
-      await departmentService.addDepartment(name);
-      setAlert({ type: "success", text: "Department added successfully" });
-      setName("");
-      loadDepartments();
-      setTimeout(() => setAlert(null), 3000);
-    } catch (e) {
-      setAlert({
-        type: "danger",
-        text: e.response?.data?.message || "Failed to add department"
-      });
-    }
-  };
+  try {
+    await departmentService.addDepartment({ name, description });
+
+    setAlert({ type: "success", text: "Department added successfully" });
+    setName("");
+    setDescription("");
+    loadDepartments();
+
+    setTimeout(() => setAlert(null), 3000);
+  } catch (e) {
+    setAlert({
+      type: "danger",
+      text: e.response?.data?.message || "Failed to add department"
+    });
+  }
+};
 
   const filteredDepartments = departments.filter(dep =>
     dep.name.toLowerCase().includes(search.toLowerCase())
@@ -74,34 +81,44 @@ const Departments = () => {
 
       {/* ADD + SEARCH */}
       <Card className="hr-card mb-3">
-        <Card.Body>
-          <Row className="g-3 align-items-end">
-            <Col md={5}>
-              <Form.Label>New Department</Form.Label>
-              <Form.Control
-                placeholder="Enter department name"
-                value={name}
-                onChange={e => setName(e.target.value)}
-              />
-            </Col>
+  <Card.Body>
+    <Row className="g-3 align-items-end">
+      <Col md={4}>
+        <Form.Label>Department Name</Form.Label>
+        <Form.Control
+          placeholder="Enter department name"
+          value={name}
+          onChange={e => setName(e.target.value)}
+        />
+      </Col>
 
-            <Col md={3}>
-              <Button className="w-100" onClick={handleAdd}>
-                Add Department
-              </Button>
-            </Col>
+      <Col md={4}>
+        <Form.Label>Description</Form.Label>
+        <Form.Control
+          placeholder="Enter department description"
+          value={description}
+          onChange={e => setDescription(e.target.value)}
+        />
+      </Col>
 
-            <Col md={4}>
-              <Form.Label>Search</Form.Label>
-              <Form.Control
-                placeholder="Search department"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-              />
-            </Col>
-          </Row>
-        </Card.Body>
-      </Card>
+      <Col md={2}>
+        <Button className="w-100" onClick={handleAdd}>
+          Add
+        </Button>
+      </Col>
+
+      <Col md={2}>
+        <Form.Label>Search</Form.Label>
+        <Form.Control
+          placeholder="Search department"
+          value={search}
+          onChange={e => setSearch(e.target.value)}
+        />
+      </Col>
+    </Row>
+  </Card.Body>
+</Card>
+
 
       {/* ALERT */}
       {alert && <Alert variant={alert.type}>{alert.text}</Alert>}

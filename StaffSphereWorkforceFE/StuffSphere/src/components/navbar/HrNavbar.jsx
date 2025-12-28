@@ -22,7 +22,6 @@ import { useAuth } from "../../auth/AuthContext";
 import profileService from "../../services/profileService";
 import ChangePasswordModal from "../employee/ChangePasswordModal";
 
-const BASE_URL = "http://localhost:8080";
 
 const HrNavbar = () => {
   const { logout } = useAuth();
@@ -90,8 +89,8 @@ const HrNavbar = () => {
 
               <Nav.Link
                 as={Link}
-                to="/hr/employees/add"
-                active={isActive("/hr/employees/add")}
+                to="/hr/add"
+                active={isActive("/hr/add")}
               >
                 <FiPlusCircle className="me-1" /> Add Employee
               </Nav.Link>
@@ -122,7 +121,7 @@ const HrNavbar = () => {
                     {/* ✅ Show image only if exists */}
                     {profile?.profileImage && (
                       <Image
-                        src={`${BASE_URL}/${profile.profileImage}`}
+                        src={`${profile.profileImage}`}
                         roundedCircle
                         width={36}
                         height={36}

@@ -2,7 +2,6 @@ import { Card, Image } from "react-bootstrap";
 import { useEffect, useState } from "react";
 import profileService from "../../services/profileService";
 
-const BASE_URL = "http://localhost:8080";
 
 const ProfileSummaryCard = () => {
   const [profile, setProfile] = useState(null);
@@ -17,7 +16,7 @@ const ProfileSummaryCard = () => {
         <Image
           src={
             profile?.profileImage
-              ? `${BASE_URL}/${profile.profileImage}`
+              ? `${profile.profileImage}`
               : "/avatar.png"
           }
           roundedCircle

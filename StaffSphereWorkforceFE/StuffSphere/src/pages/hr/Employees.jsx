@@ -24,7 +24,6 @@ import {
 import hrService from "../../services/hrService";
 import "./hr.css";
 
-const BASE_URL = "http://localhost:8080";
 const ITEMS_PER_PAGE = 10;
 
 /* =========================
@@ -192,7 +191,7 @@ const Employees = () => {
                     <div className="emp-cell">
                       {emp.profileImage ? (
                         <img
-                          src={`${BASE_URL}/${emp.profileImage}`}
+                          src={`${emp.profileImage}`}
                           alt={emp.fullName}
                           className="emp-avatar"
                         />

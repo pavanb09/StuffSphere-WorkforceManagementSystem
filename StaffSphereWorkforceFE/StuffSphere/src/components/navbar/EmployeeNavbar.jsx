@@ -12,7 +12,6 @@ import {
 import { useAuth } from "../../auth/AuthContext";
 import profileService from "../../services/profileService";
 
-const BASE_URL = "http://localhost:8080";
 
 const EmployeeNavbar = () => {
   const { logout } = useAuth();
@@ -107,7 +106,7 @@ const EmployeeNavbar = () => {
                 <div className="d-flex align-items-center gap-2">
                   {profile?.profileImage && (
                     <Image
-                      src={`${BASE_URL}/${profile.profileImage}`}
+                      src={`${profile.profileImage}`}
                       roundedCircle
                       width={34}
                       height={34}
