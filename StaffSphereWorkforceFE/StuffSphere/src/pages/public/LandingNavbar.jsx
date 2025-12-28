@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
-import "./landing.css";
+import "./Landing.css";
 
 const LandingNavbar = () => {
   const [open, setOpen] = useState(false);

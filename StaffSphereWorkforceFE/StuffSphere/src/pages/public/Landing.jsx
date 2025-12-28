@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import LandingNavbar from "./LandingNavbar";
-import "./landing.css";
+import "./Landing.css";
 import { useEffect } from "react";
 
 const Landing = () => {
