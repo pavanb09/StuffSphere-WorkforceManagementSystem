@@ -162,7 +162,7 @@ const Employees = () => {
           value={search}
           onChange={e => setSearch(e.target.value)}
         />
-        <Button>Add Employee</Button>
+        {/* <Button>Add Employee</Button> */}
       </div>
 
       {/* TABLE */}

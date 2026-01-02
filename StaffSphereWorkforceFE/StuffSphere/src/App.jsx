@@ -37,9 +37,7 @@ const Departments = lazy(() => import("./pages/hr/Departments"));
 const ProtectedRoute = lazy(() => import("./auth/ProtectedRoute"));
 const Footer = lazy(() => import("./components/Footer"));
 
-/* =======================
-   Loader Component
-======================= */
+// Loader
 const Loader = () => (
   <div className="d-flex justify-content-center align-items-center mt-5">
     <div className="spinner-border text-primary" role="status" />
