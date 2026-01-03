@@ -87,13 +87,13 @@ const HrNavbar = () => {
                 <FiUsers className="me-1" /> Employees
               </Nav.Link>
 
-              <Nav.Link
+              {/* <Nav.Link
                 as={Link}
                 to="/hr/add"
                 active={isActive("/hr/add")}
               >
                 <FiPlusCircle className="me-1" /> Add Employee
-              </Nav.Link>
+              </Nav.Link> */}
 
               <Nav.Link as={Link} to="/hr/leaves" active={isActive("/hr/leaves")}>
                 <FiCalendar className="me-1" /> Leaves

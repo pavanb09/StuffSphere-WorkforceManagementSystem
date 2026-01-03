@@ -23,6 +23,7 @@ import {
 
 import hrService from "../../services/hrService";
 import "./hr.css";
+import { useNavigate } from "react-router-dom";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -47,6 +48,7 @@ const Employees = () => {
   const [currentPage, setCurrentPage] = useState(1);
 
   const fileRefs = useRef({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     loadEmployees();
@@ -156,14 +158,20 @@ const Employees = () => {
       </Row>
 
       {/* FILTER BAR */}
-      <div className="filter-bar mb-3">
-        <Form.Control
-          placeholder="Search employees"
-          value={search}
-          onChange={e => setSearch(e.target.value)}
-        />
-        {/* <Button>Add Employee</Button> */}
-      </div>
+      <div className="filter-bar mb-3 d-flex gap-2">
+  <Form.Control
+    placeholder="Search employees"
+    value={search}
+    onChange={e => setSearch(e.target.value)}
+  />
+
+  <Button
+    variant="primary"
+    onClick={() => navigate("/hr/add")}
+  >
+    + Add Employee
+  </Button>
+</div>
 
       {/* TABLE */}
       <Card className="hr-table-card">

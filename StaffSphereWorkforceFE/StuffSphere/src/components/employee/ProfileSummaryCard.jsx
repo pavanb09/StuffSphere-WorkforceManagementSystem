@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 import profileService from "../../services/profileService";
 
 
-const ProfileSummaryCard = () => {
+const ProfileSummaryCard = ({refreshKey}) => {
   const [profile, setProfile] = useState(null);
 
   useEffect(() => {
     profileService.getMyProfile().then(res => setProfile(res.data));
-  }, []);
+  }, [refreshKey]);
 
   return (
     <Card className="hr-card text-center">

@@ -11,6 +11,7 @@ import ProfileSecurityCard from "../../components/employee/ProfileSecurityCard";
 
 const EmployeeProfile = () => {
   const [showChangePassword, setShowChangePassword] = useState(false);
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <Container fluid className="hr-page">
@@ -25,7 +26,7 @@ const EmployeeProfile = () => {
       {/* PROFILE SUMMARY + INFO */}
       <Row className="g-4 mb-4">
         <Col lg={4}>
-          <ProfileSummaryCard />
+          <ProfileSummaryCard refreshKey={refreshKey} />
         </Col>
 
         <Col lg={8}>
@@ -36,7 +37,9 @@ const EmployeeProfile = () => {
       {/* IMAGE + SECURITY */}
       <Row className="g-4">
         <Col lg={6}>
-          <ProfileImageCard />
+          <ProfileImageCard
+  onUploadSuccess={() => setRefreshKey(k => k + 1)}
+/>
         </Col>
 
         <Col lg={6}>

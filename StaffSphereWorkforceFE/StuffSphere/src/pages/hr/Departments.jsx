@@ -17,6 +17,7 @@ const Departments = () => {
   const [name, setName] = useState("");
   const [search, setSearch] = useState("");
   const [alert, setAlert] = useState(null);
+  const [adding,setAdding] = useState(false);
 
   useEffect(() => {
     loadDepartments();
@@ -27,7 +28,7 @@ const Departments = () => {
     setDepartments(res.data);
   };
 
-  const handleAdd = async () => {
+const handleAdd = async () => {
   if (!name.trim() || !description.trim()) {
     setAlert({
       type: "danger",
@@ -37,12 +38,15 @@ const Departments = () => {
   }
 
   try {
+    setAdding(true);
+    setAlert(null);
+
     await departmentService.addDepartment({ name, description });
 
     setAlert({ type: "success", text: "Department added successfully" });
     setName("");
     setDescription("");
-    loadDepartments();
+    await loadDepartments();
 
     setTimeout(() => setAlert(null), 3000);
   } catch (e) {
@@ -50,6 +54,8 @@ const Departments = () => {
       type: "danger",
       text: e.response?.data?.message || "Failed to add department"
     });
+  } finally {
+    setAdding(false);
   }
 };
 
@@ -102,9 +108,23 @@ const Departments = () => {
       </Col>
 
       <Col md={2}>
-        <Button className="w-100" onClick={handleAdd}>
-          Add
-        </Button>
+        <Button
+  className="w-100"
+  onClick={handleAdd}
+  disabled={adding}
+>
+  {adding ? (
+    <>
+      <span
+        className="spinner-border spinner-border-sm me-2"
+        role="status"
+      />
+      Adding...
+    </>
+  ) : (
+    "Add"
+  )}
+</Button>
       </Col>
 
       <Col md={2}>
