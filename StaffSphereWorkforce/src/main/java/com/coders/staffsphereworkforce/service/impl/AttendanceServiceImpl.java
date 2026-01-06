@@ -18,7 +18,8 @@ import org.springframework.stereotype.Service;
 import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +28,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final AttendanceDayRepository attendanceDayRepository;
     private final EmployeeRepository employeeRepository;
+    
+    private static final ZoneId IST_ZONE = ZoneId.of("Asia/Kolkata");
+
     
     public AttendanceServiceImpl(
             AttendanceDayRepository attendanceDayRepository,
@@ -46,7 +50,8 @@ public class AttendanceServiceImpl implements AttendanceService {
     public AttendanceResponse checkIn() {
 
         Employee emp = getLoggedInEmployee();
-        LocalDate today = LocalDate.now();
+        ZonedDateTime  now = ZonedDateTime.now(IST_ZONE);
+        LocalDate today = now.toLocalDate();
 
         AttendanceDay day = attendanceDayRepository
                 .findByEmployeeAndAttendanceDate(emp, today)
@@ -60,7 +65,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         }
 
         AttendanceSession session = new AttendanceSession();
-        session.setCheckInTime(LocalTime.now());
+        session.setCheckInTime(now.toLocalTime());
         session.setAttendanceDay(day);
 
         day.getSessions().add(session);
@@ -74,7 +79,9 @@ public class AttendanceServiceImpl implements AttendanceService {
     public AttendanceResponse checkOut() {
 
         Employee emp = getLoggedInEmployee();
-        LocalDate today = LocalDate.now();
+        ZonedDateTime now = ZonedDateTime.now(IST_ZONE);
+        LocalDate today = now.toLocalDate();
+        
 
         AttendanceDay day = attendanceDayRepository
                 .findByEmployeeAndAttendanceDate(emp, today)
@@ -85,7 +92,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .findFirst()
                 .orElseThrow(() -> new DuplicateResourceException("No active check-in"));
 
-        openSession.setCheckOutTime(LocalTime.now());
+        openSession.setCheckOutTime(now.toLocalTime());
 
         attendanceDayRepository.save(day);
 
